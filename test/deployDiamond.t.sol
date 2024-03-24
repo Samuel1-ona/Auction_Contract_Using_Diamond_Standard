@@ -11,7 +11,7 @@ import "../contracts/facets/ERC20Facet.sol";
 import "../contracts/facets/AuctionBidFacet.sol";
 
 import "../contracts/ChainBattles.sol";
-import 
+import "../contracts/interfaces/IERC1155.sol";
 import "forge-std/Test.sol";
 import "../contracts/Diamond.sol";
 
@@ -29,6 +29,7 @@ contract DiamondDeployer is Test, IDiamondCut {
     // StakingFacet sFacet;
     AuctionBidFacet aFacet;
     ChainBattles erc721Token;
+    IERC1155 erc1155Token;
 
 
     address A = address(0xa);
@@ -101,7 +102,7 @@ contract DiamondDeployer is Test, IDiamondCut {
 
     function testRevertIfTokenAddressIsZero() public {
         vm.expectRevert("INVALID_CONTRACT_ADDRESS");
-        boundAuction.createAuction(address(0), 1, 1e18, 2 days,1e18);
+        boundAuction.createAuction(address(0), 1, 1e18, 2 days);
     }
 
     function testRevertIfNotTokenOwner() public {
@@ -109,7 +110,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         erc721Token.mint();
         switchSigner(B);
         vm.expectRevert("NOT_OWNER");
-        boundAuction.createAuction(address(erc721Token), 1, 1e18,2 days, 1e18);
+        boundAuction.createAuction(address(erc721Token), 1, 1e18,2 days);
     }
 
     function testRevertIfAuctionTimestampIsNotGreaterThanBlockTimestamp()
@@ -118,14 +119,14 @@ contract DiamondDeployer is Test, IDiamondCut {
         switchSigner(A);
         erc721Token.mint();
         vm.expectRevert("INVALID_CLOSE_TIME");
-        boundAuction.createAuction(address(erc721Token), 1, 1e18, 1,1e18);
+        boundAuction.createAuction(address(erc721Token), 1, 1e18, 1 days);
     }
 
     function testAuctionStateChange() public {
         switchSigner(A);
         erc721Token.mint();
         erc721Token.approve(address(diamond), 1);
-        boundAuction.createAuction(address(erc721Token), 1, 1e18, 2 days,1e18);
+        boundAuction.createAuction(address(erc721Token), 1, 1e18, 2 days);
         LibAppStorage.Auction memory new_auction = boundAuction.getAuction(0);
         assertEq(new_auction.auctionid, 0);
         assertEq(new_auction.author, A);
@@ -138,7 +139,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         switchSigner(A);
         erc721Token.mint();
         erc721Token.approve(address(diamond), 1);
-        boundAuction.createAuction(address(erc721Token), 1, 1e18, 2 days,1e18);
+        boundAuction.createAuction(address(erc721Token), 1, 1e18, 2 days);
         vm.warp(3 days);
         vm.expectRevert("AUCTION_CLOSED");
         boundAuction.bid(0, 5e18);
@@ -148,7 +149,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         switchSigner(C);
         erc721Token.mint();
         erc721Token.approve(address(diamond), 1);
-        boundAuction.createAuction(address(erc721Token), 1, 1e18, 2 days,1e18);
+        boundAuction.createAuction(address(erc721Token), 1, 1e18, 2 days);
         vm.expectRevert("INSUFFICIENT_BALANCE");
         boundAuction.bid(0, 5e18);
     }
@@ -157,7 +158,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         switchSigner(A);
         erc721Token.mint();
         erc721Token.approve(address(diamond), 1);
-        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days,1e18);
+        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days);
         vm.expectRevert("STARTING_PRICE_MUST_BE_GREATER");
         boundAuction.bid(0, 1e18);
     }
@@ -166,7 +167,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         switchSigner(A);
         erc721Token.mint();
         erc721Token.approve(address(diamond), 1);
-        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days,1e18);
+        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days);
         boundAuction.bid(0, 2e18);
         vm.expectRevert("PRICE_MUST_BE_GREATER_THAN_LAST_BIDDED");
         boundAuction.bid(0, 1e18);
@@ -187,7 +188,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         );
         erc721Token.mint();
         erc721Token.approve(address(diamond), 1);
-        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days,1e18);
+        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days);
         boundAuction.bid(0, 2e18);
         switchSigner(B);
         boundAuction.bid(0, 3e18);
@@ -207,7 +208,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         switchSigner(A);
         erc721Token.mint();
         erc721Token.approve(address(diamond), 1);
-        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days,1e18);
+        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days);
         boundAuction.bid(0, 2e18);
         switchSigner(B);
         boundAuction.bid(0, 3e18);
@@ -223,7 +224,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         switchSigner(A);
         erc721Token.mint();
         erc721Token.approve(address(diamond), 1);
-        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days,1e18);
+        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days);
         boundAuction.bid(0, 2e18);
         vm.expectRevert("TIME_NOT_REACHED");
         boundAuction.closeAuction(0);
@@ -233,7 +234,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         switchSigner(A);
         erc721Token.mint();
         erc721Token.approve(address(diamond), 1);
-        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days,1e18);
+        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days);
         boundAuction.bid(0, 2e18);
         switchSigner(B);
         vm.warp(2 days);
@@ -247,7 +248,7 @@ contract DiamondDeployer is Test, IDiamondCut {
         uint oldABalance = boundERC.balanceOf(A);
         erc721Token.mint();
         erc721Token.approve(address(diamond), 1);
-        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days,1e18);
+        boundAuction.createAuction(address(erc721Token), 1, 2e18, 2 days);
         switchSigner(B);
         boundAuction.bid(0, 2e18);
         switchSigner(C);

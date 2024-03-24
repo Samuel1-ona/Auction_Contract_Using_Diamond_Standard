@@ -14,8 +14,8 @@ contract AuctionBidFacet {
         address _contractAddress,
         uint _tokenId,
         uint _startingBid,
-        uint _closeTime,
-        uint _amount
+        uint _closeTime
+      
         
     ) external {
         require(_contractAddress != address(0), "INVALID_CONTRACT_ADDRESS");
@@ -30,19 +30,19 @@ contract AuctionBidFacet {
             _tokenId
         );
 
-        require(
-    IERC1155(_contractAddress).balanceOf(msg.sender ,_tokenId) > 0,
-    "INSUFFICIENT_BALANCE"
-);
+        // require(
+//     IERC1155(_contractAddress).balanceOf(msg.sender ,_tokenId) > 0,
+//     "INSUFFICIENT_BALANCE"
+// );
 
-require(_closeTime > block.timestamp, "INVALID_CLOSE_TIMES");
-        IERC1155(_contractAddress).safeTransferFrom(
-            msg.sender,
-            address(this),
-            _tokenId,
-            _amount,
-            ""
-        );
+// require(_closeTime > block.timestamp, "INVALID_CLOSE_TIMES");
+//         IERC1155(_contractAddress).safeTransferFrom(
+//             msg.sender,
+//             address(this),
+//             _tokenId,
+//             _amount,
+//             ""
+//         );
 
 
         LibAppStorage.Auction memory _newAuction = LibAppStorage.Auction({
