@@ -102,7 +102,7 @@ contract DiamondDeployer is Test, IDiamondCut {
 
     function testRevertIfTokenAddressIsZero() public {
         vm.expectRevert("INVALID_CONTRACT_ADDRESS");
-        boundAuction.createAuction(address(0), 1, 1e18, 2 days);
+        boundAuction.createAuction(address(0x0), 1, 1e18, 2 days);
     }
 
     function testRevertIfNotTokenOwner() public {
